@@ -17,7 +17,8 @@ class get_wechat_open_id_handler(tornado.web.RequestHandler):
         str_code = json_obj["code"]
         url = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&grant_type=authorization_code&js_code=%s" % (
         str_appid, str_secret, str_code)
-        # 必须要用一步的请求 同步请求应该会阻塞之前的请求
+
+        # 必须要用异步的请求 同步请求应该会阻塞当前的客服端的请求
         http = tornado.httpclient.AsyncHTTPClient()
 
         try:
@@ -26,10 +27,15 @@ class get_wechat_open_id_handler(tornado.web.RequestHandler):
             print(e)
         else:
             print(result.body)
-            self._response(result.body)
+            open_id = json.loads(result.body)["openid"]
+            self._response(open_id)
 
-    def _response(self, result):
-        self.write(result)
+    def _response(self, str_open_id):
+        result = mysql_db.db_connect_singleton().is_register(str_open_id)
+        result_obj = {"openid":str_open_id,"is_register": result}
+        str_json = json.dumps(result_obj)
+        print("获取openid接口返回", str_json)
+        self.write(str_json)
         self.finish()
 
 
@@ -50,6 +56,7 @@ class get_content_list_handler(tornado.web.RequestHandler):
         print("获取联系人列表请求参数", body)
         result_json_str = mysql_db.db_connect_singleton().get_content_index_list(body)
         self.write(result_json_str)
+        self.finish()
         pass
 
 

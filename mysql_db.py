@@ -7,6 +7,8 @@ import json
 from datetime import date, datetime, timedelta
 
 
+
+
 class db_connect_singleton(object):
     _instance_lock = threading.Lock()
 
@@ -20,12 +22,44 @@ class db_connect_singleton(object):
 
     _cnx = None
 
+    def is_register(self, str_open_id):
+        return self.__is_register(str_open_id)
+
+    def __is_register(self,str_open_id):
+
+        if not self.connect_open():
+            print("数据库链接错误")
+            return None
+
+        cursor = self._cnx.cursor()
+        i_sql = ("replace into user_info(c_open_id,t_creation_time) VALUES (%s,%s);")
+        now_datetime = datetime.now()
+        i_values = (str_open_id,now_datetime)
+        cursor.execute(i_sql,i_values)
+
+        self._cnx.commit()
+
+        query_sql = "select i_is_register from user_info where c_open_id = \'%s\';" % str_open_id
+        cursor.execute(query_sql)
+
+        # 查询联系人列表
+
+        b_is_register = False
+        for (i_is_register) in cursor:
+            if i_is_register == 0:
+                b_is_register = False
+            else:
+                b_is_register = True
+
+        cursor.close()
+        self._cnx.close()
+        return b_is_register
+
+
     def register(self, str_userinfo):
         print("解析发过来的数据", str_userinfo)
-        # {"nickName": "无畏的L先生", "gender": 1, "language": "zh_CN", "city": "Shenzhen", "province": "Guangdong",
-        #  "country": "China",
-        #  "avatarUrl": "https://wx.qlogo.cn/mmopen/vi_32/BkMRtmR74VOicUfFTCwEBGPrSFDMoSruKJfjR01NSQ60BCxWRMoQWouYmQv7pkicyXeibElQ61cEvb2XRAMzAvVQA/132"}
         json_obj = json.loads(str_userinfo)
+        str_open_id = json_obj["openid"]
         str_nike_name = json_obj["nickName"]
         num_gender = json_obj["gender"]
         str_language = json_obj["language"]
@@ -33,9 +67,10 @@ class db_connect_singleton(object):
         str_province = json_obj["province"]
         str_country = json_obj["country"]
         str_avatar_url = json_obj["avatarUrl"]
-        # self.__register("1231iu", str_nike_name, num_gender, str_language, str_city, str_province, str_country, str_avatar_url, "123123121")
+        self.__register(str_open_id, str_nike_name, num_gender, str_language, str_city, str_province, str_country, str_avatar_url, '')
         pass
 
+   # 注册接口需要后续进行调整
     def __register(self, str_open_id, str_nike_name, num_gender, str_language, str_city, str_province, str_country,
                    str_avatar_url, str_union_id):
 
@@ -46,7 +81,7 @@ class db_connect_singleton(object):
         cursor = self._cnx.cursor()
         now_datetime = datetime.now()
         add_user_info = (
-            "INSERT INTO user_info"
+            "replace into user_info"
             "(c_open_id, c_nike_name, i_gender, c_language, c_city, c_province, c_country, c_avatar_url, c_union_id, t_creation_time) "
             "VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         )

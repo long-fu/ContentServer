@@ -16,7 +16,7 @@ def make_app():
     print("start success, register handler")
     return tornado.web.Application([
         (r'/', MainHandler),
-        (r'/get_open_id',request_handler.get_wechat_open_id_handler),
+        (r'/get_open_id', request_handler.get_wechat_open_id_handler),
         (r'/register', request_handler.register_handler),
         (r'/add_content', request_handler.add_content_handler),
         (r'/delete_content', request_handler.delete_content_handler),
