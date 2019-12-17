@@ -200,7 +200,7 @@ class db_connect_singleton(object):
 
         data_content_info_list = []
         for item in array_content_info:
-            data = (str_open_id, content_id, item["type"], item["phone_number"], now_datetime, now_datetime)
+            data = (str_open_id, content_id, item["phone_type"], item["phone_number"], now_datetime, now_datetime)
             data_content_info_list += [data]
 
         cursor.executemany(add_content_info, data_content_info_list)
@@ -212,11 +212,14 @@ class db_connect_singleton(object):
 
     # 删除联系人
     def delete_content(self, str_json):
-        print("删除联系人")
+        print("删除联系人", str_json)
         json_obj = json.loads(str_json)
         try:
             content_id = json_obj["content_id"]
-            return self.__delete_content(content_id)
+            print(type(content_id))
+            num_content_id = int(content_id)
+            print("删除号码的联系人id",type(num_content_id),num_content_id)
+            return self.__delete_content(num_content_id)
         except Exception as e:
             print("json 格式错误 或者数据字段缺少 错误", e)
             return False
@@ -229,11 +232,15 @@ class db_connect_singleton(object):
 
         cursor = self._cnx.cursor()
 
-        delete_content_index = (
-            "delete from content_index where id = %s;delete from content_info where i_content_id = %s;")
-        data_content_index = (num_content_index_id, num_content_index_id)
+        # delete_content_index = (
+        #     "delete from content_index where id = %s;delete from content_info where i_content_id = %s;")
+        # data_content_index = (num_content_index_id, num_content_index_id)
 
-        cursor.execute(delete_content_index, data_content_index)
+        d_content_index_sql = "delete from content_index where id = %d" % (num_content_index_id)
+        d_content_info_sql = "delete from content_info where i_content_id = %d" % (num_content_index_id)
+
+        cursor.execute(d_content_index_sql)
+        cursor.execute(d_content_info_sql)
 
         self._cnx.commit()
         cursor.close()
@@ -327,7 +334,7 @@ class db_connect_singleton(object):
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
                 print("Database does not exist")
             else:
-                print(err.msg)
+                print("数据库打开错误",err.msg)
                 pass
             return False
         else:
@@ -344,64 +351,64 @@ class db_connect_singleton(object):
                     db_connect_singleton._instance = object.__new__(cls)
         return db_connect_singleton._instance
 
-#
-# if __name__ == '__main__':
-#     add_content_json = '''
-#     {
-#     "open_id": "jkxznjkshdkas",
-#     "nike_name": "hao帅",
-#     "avatar_url": "http:daskjhdka",
-#     "remark":"天下第帅",
-#     "array": [
-#         {"type":"住宅","phone_number":"18682435851"},
-#         {"type":"住宅","phone_number":"18682435851"}
-#     ]
-# }
-#     '''
-#
-#     m_content_json = '''
-#     {
-#     "open_id": "jkxznjkshdkas",
-#     "content_id": 15,
-#     "nike_name":"修正",
-#     "avatar_url": "http:daskjhdka",
-#     "remark":"天下第帅",
-#     "array": [
-#         {"ot":1, "info_id": 1,  "type":"住宅","phone_number":"修改18682435851🙏"},
-#         {"ot":0, "type":"住宅","phone_number":"添加18682435851"}
-#     ]
-# }
-#     '''
-#
-#     d_content_json = '''
-#     {
-#     "content_id": 1
-#     }
-# '''
-#
-#     s_content_json = '''
-#     {
-#     "open_id": "jkxznjkshdkas"
-#     }
-#     '''
-#
-#     s_content_info_json = '''
-#     {
-#     "content_id": 15
-#     }
-#     '''
-#
-#     db_do = db_connect_singleton()
-#     # 添加号码
-#     # db_do.add_content(add_content_json)
-#     # 删除测试
-#     # db_do.delete_content(d_content_json)
-#     # 测试修改
-#     # db_do.modify_content_info(m_content_json)
-#     # 测试获取联系人列表
-#     # db_do.get_content_index_list(s_content_json)
-#
-#     # 测试获取联系人信息
-#     db_do.get_content_info(s_content_info_json)
-#     print("测试完成")
-#     pass
+
+if __name__ == '__main__':
+    add_content_json = '''
+    {
+    "open_id": "jkxznjkshdkas",
+    "nike_name": "hao帅",
+    "avatar_url": "http:daskjhdka",
+    "remark":"天下第帅",
+    "array": [
+        {"phone_type":"住宅","phone_number":"18682435851"},
+        {"phone_type":"住宅","phone_number":"18682435851"}
+    ]
+}
+    '''
+
+    m_content_json = '''
+    {
+    "open_id": "jkxznjkshdkas",
+    "content_id": 15,
+    "nike_name":"修正",
+    "avatar_url": "http:daskjhdka",
+    "remark":"天下第帅",
+    "array": [
+        {"ot":1, "info_id": 1,  "type":"住宅","phone_number":"修改18682435851🙏"},
+        {"ot":0, "phone_type":"住宅","phone_number":"添加18682435851"}
+    ]
+}
+    '''
+
+    d_content_json = '''
+    {
+    "content_id": "23"
+    }
+'''
+
+    s_content_json = '''
+    {
+    "open_id": "jkxznjkshdkas"
+    }
+    '''
+
+    s_content_info_json = '''
+    {
+    "content_id": 15
+    }
+    '''
+
+    db_do = db_connect_singleton()
+    # 添加号码
+    # db_do.add_content(add_content_json)
+    # 删除测试
+    db_do.delete_content(d_content_json)
+    # 测试修改
+    # db_do.modify_content_info(m_content_json)
+    # 测试获取联系人列表
+    # db_do.get_content_index_list(s_content_json)
+
+    # 测试获取联系人信息
+    # db_do.get_content_info(s_content_info_json)
+    # print("测试完成")
+    pass

@@ -100,7 +100,7 @@ class delete_content_handler(tornado.web.RequestHandler):
         else:
             self.write("{\'error_code\': -1,\'error_msg\':\'删除失败\'}")
             pass
-        print("删除联系人请求参数", body)
+        # print("删除联系人请求参数", body)
 
         pass
 
