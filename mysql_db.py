@@ -127,7 +127,9 @@ class db_connect_singleton(object):
 
     def get_content_info(self, str_json):
         json_obj = json.loads(str_json)
-        num_content_id = json_obj["content_id"]
+        content_id = json_obj["content_id"]
+
+        num_content_id = int(content_id)
         return self.__get_content_info(num_content_id)
 
     def __get_content_info(self, num_content_id):
@@ -142,7 +144,7 @@ class db_connect_singleton(object):
         cursor.execute(info_query_sql)
         json_obj = {}
         for (c_nike_name, c_avatar_url, c_remark) in cursor:
-            json_obj = {"nike_name": c_nike_name, "avatar_url": c_avatar_url, "remark": c_remark}
+            json_obj = {"content_id": num_content_id,"nike_name": c_nike_name, "avatar_url": c_avatar_url, "remark": c_remark}
 
         number_query_sql = "select id,c_phone_type,c_phone_number from content_info where i_content_id = %d;" % num_content_id
         cursor.execute(number_query_sql)
@@ -216,9 +218,9 @@ class db_connect_singleton(object):
         json_obj = json.loads(str_json)
         try:
             content_id = json_obj["content_id"]
-            print(type(content_id))
+            # print(type(content_id))
             num_content_id = int(content_id)
-            print("删除号码的联系人id",type(num_content_id),num_content_id)
+            # print("删除号码的联系人id", type(num_content_id),num_content_id)
             return self.__delete_content(num_content_id)
         except Exception as e:
             print("json 格式错误 或者数据字段缺少 错误", e)
@@ -231,10 +233,6 @@ class db_connect_singleton(object):
             return False
 
         cursor = self._cnx.cursor()
-
-        # delete_content_index = (
-        #     "delete from content_index where id = %s;delete from content_info where i_content_id = %s;")
-        # data_content_index = (num_content_index_id, num_content_index_id)
 
         d_content_index_sql = "delete from content_index where id = %d" % (num_content_index_id)
         d_content_info_sql = "delete from content_info where i_content_id = %d" % (num_content_index_id)
