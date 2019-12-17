@@ -32,6 +32,7 @@ class db_connect_singleton(object):
             return None
 
         cursor = self._cnx.cursor()
+        # 插入替换 时间需要判读 不能进行每次的插如
         i_sql = ("replace into user_info(c_open_id,t_creation_time) VALUES (%s,%s);")
         now_datetime = datetime.now()
         i_values = (str_open_id,now_datetime)
