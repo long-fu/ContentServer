@@ -245,7 +245,7 @@ class db_connect_singleton(object):
         self._cnx.close()
 
         return True
-
+    # 重新完成修改部分 都完成新增
     def modify_content_info(self, str_content_info):
 
         try:
@@ -323,6 +323,77 @@ class db_connect_singleton(object):
         self._cnx.close()
 
         return True
+
+
+
+    def content_info_modify(self,str_content_info):
+        try:
+            json_obj = json.loads(str_content_info)
+
+            num_content_index_id = json_obj["content_id"]
+
+            str_open_id = json_obj["open_id"]
+            str_nike_name = json_obj["nike_name"]
+            str_avatar_url = json_obj["avatar_url"]
+            str_remark = json_obj["remark"]
+            str_phone_number = json_obj["array"][0]["phone_number"]
+            array_content_info = json_obj["array"]
+
+            content_id = self.__content_info_modify__(str_open_id, str_nike_name, str_avatar_url, str_remark, str_phone_number,
+                                            array_content_info,num_content_index_id)
+            return content_id
+        except Exception as e:
+            print("json 格式错误 或者数据字段缺少 错误", e)
+            return None
+        pass
+
+    def __content_info_modify__(self, str_open_id, str_nike_name, str_avatar_url, str_remark, str_phone_number,
+                      array_content_info, num_content_index_id):
+        # 删除之前的数据
+
+        if not self.connect_open():
+            return False
+
+        cursor = self._cnx.cursor()
+
+        d_content_index_sql = "delete from content_index where id = %d" % (num_content_index_id)
+        d_content_info_sql = "delete from content_info where i_content_id = %d" % (num_content_index_id)
+
+        cursor.execute(d_content_index_sql)
+        cursor.execute(d_content_info_sql)
+
+
+        # 新增现在的数据
+        now_datetime = datetime.now()
+
+        add_content_index = (
+            "INSERT INTO content_index"
+            "(c_open_id, c_nike_name, c_avatar_url, c_remark, c_phone_number,t_modify_time,t_creation_time) "
+            "VALUES( %s, %s, %s, %s, %s, %s,%s);")
+
+        data_content_index = (
+            str_open_id, str_nike_name, str_avatar_url, str_remark, str_phone_number, now_datetime, now_datetime)
+
+        cursor.execute(add_content_index, data_content_index)
+
+        content_id = cursor.lastrowid
+
+        add_content_info = 'INSERT INTO content_info (c_open_id,i_content_id,c_phone_type,c_phone_number,t_modify_time,t_creation_time) VALUES(%s,%s,%s,%s,%s,%s);'
+
+        data_content_info_list = []
+        for item in array_content_info:
+            data = (str_open_id, content_id, item["phone_type"], item["phone_number"], now_datetime, now_datetime)
+            data_content_info_list += [data]
+
+        cursor.executemany(add_content_info, data_content_info_list)
+
+        self._cnx.commit()
+        cursor.close()
+        self._cnx.close()
+        return content_id
+
+
+        pass
 
     def connect_open(self):
         try:
@@ -410,4 +481,6 @@ if __name__ == '__main__':
     # 测试获取联系人信息
     # db_do.get_content_info(s_content_info_json)
     # print("测试完成")
+
+
     pass

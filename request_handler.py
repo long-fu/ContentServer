@@ -110,7 +110,7 @@ class delete_content_handler(tornado.web.RequestHandler):
 class modify_content_handler(tornado.web.RequestHandler):
     def post(self):
         body = self.request.body.decode('utf-8')
-        result = mysql_db.db_connect_singleton().modify_content_info(body)
+        result = mysql_db.db_connect_singleton().content_info_modify(body)
         if result is True:
             self.write("{\'error_code\': 0,\'error_msg\':\'删除成功\'}")
             pass
