@@ -85,7 +85,6 @@ class get_content_info_handler(tornado.web.RequestHandler):
         result_json_str = mysql_db.db_connect_singleton().get_content_info(body)
         self.write(result_json_str)
         pass
-
     pass
 
 

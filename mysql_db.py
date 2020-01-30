@@ -313,6 +313,7 @@ class db_connect_singleton(object):
                     cursor.execute(d_sql)
                     pass
                 else:
+                    # 不存在表示 没有 进行修改
                     pass
 
         cursor.execute(update_sql)
