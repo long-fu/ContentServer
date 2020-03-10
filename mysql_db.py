@@ -109,7 +109,7 @@ class db_connect_singleton(object):
             return None
 
         cursor = self._cnx.cursor()
-        query_sql = "select id, c_open_id, c_nike_name, c_avatar_url, c_phone_number from content_index where c_open_id = \'%s\';" % str_open_id
+        query_sql = "select id, c_open_id, c_nike_name, c_avatar_url, c_phone_number from content_index where c_open_id = \'%s\' order by c_nike_name;" % str_open_id
 
         cursor.execute(query_sql)
         json_obj = []
